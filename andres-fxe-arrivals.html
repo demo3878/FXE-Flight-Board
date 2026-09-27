@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#071a33">
+<title>Andres' Flight Wall</title>
+<style>
+:root{--sky:#071a33;--card:#0d2c50;--blue:#67c8ff;--yellow:#ffd84d;--white:#f7fbff;--green:#78e6b0}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 50% 0,#174d7d,#071a33 55%);color:var(--white);font-family:ui-rounded,"SF Pro Rounded",system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:1100px;margin:auto;padding:20px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{font-size:clamp(26px,5vw,48px);font-weight:900}.brand span{color:var(--yellow)}
+.status{font-size:14px;padding:8px 12px;border-radius:999px;background:#ffffff18}
+.hero{text-align:center;margin:18px 0 12px}.eyebrow{color:var(--blue);font-weight:900;letter-spacing:.14em}
+.callsign{font-size:clamp(52px,12vw,110px);font-weight:1000;line-height:.9;margin:8px 0}
+.plane{font-size:clamp(70px,18vw,150px);display:inline-block;filter:drop-shadow(0 10px 12px #0007);transition:transform .4s}
+.subtitle{font-size:clamp(18px,4vw,30px);font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
+.card{background:linear-gradient(145deg,#123b68,#0a2442);border:1px solid #ffffff1d;border-radius:24px;padding:16px;text-align:center;box-shadow:0 10px 30px #0004}
+.icon{font-size:32px}.label{font-size:13px;color:#b9d8ed;font-weight:800;letter-spacing:.08em;margin-top:4px}.value{font-size:clamp(24px,4vw,38px);font-weight:1000;margin-top:4px}
+.rumble{margin-top:12px;padding:18px;border-radius:24px;background:linear-gradient(90deg,#f3a33b,#ffd84d);color:#142033;text-align:center}
+.rumble-title{font-size:18px;font-weight:1000}.stars{font-size:clamp(28px,7vw,52px);letter-spacing:3px}.fact{margin:12px 0 0;padding:16px;border-radius:20px;background:#ffffff10;text-align:center;font-size:17px}
+.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+button{border:0;border-radius:999px;padding:12px 18px;font-weight:900;font-size:16px;background:var(--blue);color:#06213a}
+button.secondary{background:#ffffff18;color:white}
+.small{text-align:center;color:#a9c7dc;font-size:12px;line-height:1.4;margin-top:14px}
+@media(max-width:720px){.grid{grid-template-columns:repeat(2,1fr)}.wrap{padding:14px}.card{border-radius:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="brand">🛬 <span>ANDRES'</span> FXE ARRIVALS</div><div class="status" id="status">DEMO MODE</div></header>
+<div class="hero">
+<div class="eyebrow" id="eyebrow">🛬 INCOMING TO FXE!</div>
+<div class="callsign" id="callsign">N123AB</div>
+<div class="plane" id="plane">✈️</div>
+<div class="subtitle" id="subtitle">Watching for aircraft coming to Fort Lauderdale Executive ✈️</div>
+<div class="fact" style="margin-top:14px"><b>🛩️ AIRCRAFT:</b> <span id="model">Waiting for a plane…</span> &nbsp; • &nbsp; <b>TAIL:</b> <span id="registration">—</span></div>
+</div>
+<div class="grid">
+<div class="card"><div class="icon">🎯</div><div class="label">DISTANCE TO FXE</div><div class="value" id="distance">—</div></div>
+<div class="card"><div class="icon">☁️</div><div class="label">ALTITUDE</div><div class="value" id="altitude">3,800 ft</div></div>
+<div class="card"><div class="icon">💨</div><div class="label">SPEED</div><div class="value" id="speed">184 mph</div></div>
+<div class="card"><div class="icon">📉</div><div class="label">ARRIVAL STATUS</div><div class="value" id="direction">WATCHING</div></div>
+</div>
+<div class="rumble"><div class="rumble-title">🔊 RUMBLE RANKING</div><div class="stars" id="stars">★★★☆☆</div><div id="rumbleText"><b>3 / 5</b> • You might hear this one!</div></div>
+<div class="fact" id="fact">🧠 <b>Flight Fact:</b> Altitude tells us how high the aircraft is above sea level.</div>
+<div class="controls"><button onclick="startLive()">📡 START FXE WATCH</button><button class="secondary" onclick="nextPlane()">🛬 NEXT ARRIVAL</button><button class="secondary" onclick="toggleFull()">⛶ FULL SCREEN</button></div>
+<div class="small">This board watches the airspace around FXE and uses an arrival detector to show aircraft whose position, direction and altitude indicate they are approaching FXE. Because raw ADS-B does not always include a filed destination, the board labels these as likely FXE arrivals rather than guaranteeing a flight plan destination. No iPad location is needed.</div>
+</div>
+<script>
+let planes=[], idx=0, myLat=null, myLon=null;
+const facts=[
+"Aircraft use transponders to broadcast information such as position, altitude and speed.",
+"A nautical mile is used in aviation and is a little longer than a regular mile.",
+"Pilots describe direction using degrees: north is 360°, east is 90°, south is 180° and west is 270°.",
+"Vertical speed tells us whether an aircraft is climbing or descending.",
+"ADS-B lets aircraft broadcast their position to receivers on the ground."
+];
+
+const FXE={lat:26.197333,lon:-80.170667};
+const MODEL={
+"C172":"Cessna 172 Skyhawk","C182":"Cessna 182 Skylane","C206":"Cessna 206 Stationair",
+"C208":"Cessna 208 Caravan","C25A":"Cessna Citation CJ2","C25B":"Cessna Citation CJ3",
+"C25C":"Cessna Citation CJ4","C56X":"Cessna Citation Excel/XLS","C680":"Cessna Citation Sovereign",
+"C68A":"Cessna Citation Latitude","C700":"Cessna Citation Longitude",
+"PC12":"Pilatus PC-12","PC24":"Pilatus PC-24","E50P":"Embraer Phenom 100","E55P":"Embraer Phenom 300",
+"GLF4":"Gulfstream IV","GLF5":"Gulfstream V","GLF6":"Gulfstream G650","G280":"Gulfstream G280",
+"CL30":"Bombardier Challenger 300","CL35":"Bombardier Challenger 350","CL60":"Bombardier Challenger 600",
+"LJ35":"Learjet 35","LJ45":"Learjet 45","LJ60":"Learjet 60","BE20":"Beechcraft King Air 200",
+"BE30":"Beechcraft King Air 300","BE40":"Beechjet 400","B350":"Beechcraft King Air 350",
+"SR22":"Cirrus SR22","PA28":"Piper Cherokee","PA46":"Piper M-Class","DA42":"Diamond DA42",
+"H25B":"Hawker 800","FA50":"Dassault Falcon 50","F2TH":"Dassault Falcon 2000","F900":"Dassault Falcon 900",
+"A320":"Airbus A320","A321":"Airbus A321","B738":"Boeing 737-800","B38M":"Boeing 737 MAX 8"
+};
+function bearingTo(lat1,lon1,lat2,lon2){
+ const p=Math.PI/180,a=lat1*p,b=lat2*p,dl=(lon2-lon1)*p;
+ let y=Math.sin(dl)*Math.cos(b),x=Math.cos(a)*Math.sin(b)-Math.sin(a)*Math.cos(b)*Math.cos(dl);
+ return (Math.atan2(y,x)/p+360)%360;
+}
+function angleDiff(a,b){return Math.abs(((a-b+540)%360)-180)}
+function likelyFXE(p){
+ let lat=p.latitude??p.lat,lon=p.longitude??p.lon;
+ if(lat==null||lon==null)return false;
+ let d=hav(lat,lon,FXE.lat,FXE.lon);
+ let alt=p.altitude??p.alt_baro??p.geo_altitude;
+ if(typeof alt!=="number") alt=99999;
+ let tr=p.true_track??p.track;
+ if(tr==null)return d<4 && alt<4000;
+ let toward=angleDiff(tr,bearingTo(lat,lon,FXE.lat,FXE.lon));
+ let vr=p.vertical_rate??p.baro_rate??0;
+ return d<=18 && alt<=9000 && toward<=38 && (vr<250 || alt<3500);
+}
+function modelName(p){let t=(p.t||p.aircraft_type||"").trim();return MODEL[t]||t||"Aircraft type not broadcasting";}
+
+function hav(lat1,lon1,lat2,lon2){const R=3958.8,p=Math.PI/180,dlat=(lat2-lat1)*p,dlon=(lon2-lon1)*p;const a=Math.sin(dlat/2)**2+Math.cos(lat1*p)*Math.cos(lat2*p)*Math.sin(dlon/2)**2;return 2*R*Math.asin(Math.sqrt(a))}
+function compass(d){let names=["N","NE","E","SE","S","SW","W","NW"];let arrows=["↑","↗","→","↘","↓","↙","←","↖"];let i=Math.round((d||0)/45)%8;return arrows[i]+" "+names[i]}
+function rumble(p,dist){
+ let alt=Math.max(0,p.altitude||p.alt_baro||0), cat=p.category||0, score=1;
+ if(dist<2)score++; if(dist<5)score++; if(alt<5000)score++; if([4,5,6].includes(cat))score++;
+ return Math.min(5,score);
+}
+function render(p){
+ let lat=p.latitude??p.lat, lon=p.longitude??p.lon;
+ let dist=(myLat!=null&&lat!=null)?hav(myLat,myLon,lat,lon):(p.distance||2.4);
+ let alt=p.altitude??p.alt_baro??p.geo_altitude??3800;
+ if(typeof alt==="string") alt=3800;
+ let vel=p.velocity!=null?p.velocity*2.23694:(p.gs!=null?p.gs*1.15078:184);
+ let hdg=p.true_track??p.track??90;
+ let call=(p.callsign||p.flight||p.r||p.hex||"MYSTERY").trim();
+ document.getElementById("callsign").textContent=call;
+ document.getElementById("subtitle").textContent="🎯 Likely inbound to Fort Lauderdale Executive (FXE)";
+ document.getElementById("model").textContent=modelName(p);
+ document.getElementById("registration").textContent=(p.r||p.registration||"—");
+ document.getElementById("distance").textContent=dist.toFixed(1)+" mi";
+ document.getElementById("altitude").textContent=Math.round(alt* (p.geo_altitude!=null?3.28084:1)).toLocaleString()+" ft";
+ document.getElementById("speed").textContent=Math.round(vel)+" mph";
+ let vr=p.vertical_rate??p.baro_rate??0;
+ document.getElementById("direction").textContent=vr < -150 ? "⬇ DESCENDING" : (dist<4 ? "👀 VERY CLOSE" : "➡ INBOUND");
+ document.getElementById("plane").style.transform=`rotate(${hdg-90}deg)`;
+ let r=rumble({...p,altitude:alt},dist);
+ document.getElementById("stars").textContent="★".repeat(r)+"☆".repeat(5-r);
+ let txt=["Super quiet","A little hum","You might hear this one!","Big rumble!","WOW — look up!"][r-1];
+ document.getElementById("rumbleText").innerHTML=`<b>${r} / 5</b> • ${txt}`;
+ document.getElementById("fact").innerHTML="🧠 <b>Flight Fact:</b> "+facts[Math.floor(Math.random()*facts.length)];
+}
+function nextPlane(){if(planes.length){idx=(idx+1)%planes.length;render(planes[idx])}}
+async function loadOpenSky(){
+ let delta=.32,lat=FXE.lat,lon=FXE.lon;
+ let url=`https://opensky-network.org/api/states/all?lamin=${lat-delta}&lomin=${lon-delta}&lamax=${lat+delta}&lomax=${lon+delta}&extended=1`;
+ let res=await fetch(url); if(!res.ok)throw Error("feed");
+ let d=await res.json();
+ let all=(d.states||[]).filter(x=>x[5]!=null&&x[6]!=null&&!x[8]).map(x=>({
+   hex:x[0],callsign:x[1],origin_country:x[2],longitude:x[5],latitude:x[6],
+   geo_altitude:x[13],altitude:(typeof x[7]==="number"?x[7]*3.28084:null),
+   velocity:x[9],true_track:x[10],vertical_rate:(x[11]||0)*196.85,category:x[17]
+ }));
+ planes=all.filter(likelyFXE).sort((a,b)=>hav(a.latitude,a.longitude,FXE.lat,FXE.lon)-hav(b.latitude,b.longitude,FXE.lat,FXE.lon));
+ if(!planes.length){
+   document.getElementById("status").textContent="LIVE • NO FXE ARRIVAL DETECTED";
+   document.getElementById("eyebrow").textContent="🔭 WATCHING THE SKY AROUND FXE";
+   document.getElementById("callsign").textContent="SCANNING…";
+   document.getElementById("subtitle").textContent="No likely FXE arrival is close enough yet";
+   document.getElementById("model").textContent="Waiting for our next airplane ✈️";
+   document.getElementById("registration").textContent="—";
+   return;
+ }
+ idx=0;render(planes[0]); document.getElementById("status").textContent=`LIVE • ${planes.length} LIKELY FXE ARRIVAL${planes.length>1?"S":""}`;
+ document.getElementById("eyebrow").textContent="🛬 INCOMING TO FXE!";
+}
+function startLive(){
+ document.getElementById("status").textContent="CONNECTING TO FXE…";
+ loadOpenSky().then(()=>setInterval(()=>loadOpenSky().catch(()=>{}),30000))
+ .catch(()=>{document.getElementById("status").textContent="DEMO • LIVE FEED BUSY";alert("The public aircraft feed is busy right now. Try START FXE WATCH again in a moment.")});
+}
+function toggleFull(){let e=document.documentElement;if(!document.fullscreenElement)e.requestFullscreen?.();else document.exitFullscreen?.()}
+render({callsign:"N123AB",r:"N123AB",t:"C68A",latitude:26.26,longitude:-80.25,altitude:2800,gs:160,track:135,baro_rate:-700,category:3});
+</script>
+</body></html>
