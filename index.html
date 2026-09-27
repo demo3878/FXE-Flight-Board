@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#071a33">
+
+<title>Andres' Flight Wall</title>
+
+<style>
+* {
+box-sizing: border-box;
+}
+
+body {
+margin: 0;
+min-height: 100vh;
+font-family: "Arial Rounded MT Bold", Arial, sans-serif;
+color: white;
+background:
+radial-gradient(circle at top, #17639b 0%, #0b3459 40%, #06182d 100%);
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.container {
+width: 100%;
+max-width: 900px;
+padding: 30px 20px;
+text-align: center;
+}
+
+.plane {
+font-size: 75px;
+margin-bottom: 5px;
+}
+
+h1 {
+margin: 0;
+font-size: clamp(42px, 8vw, 72px);
+font-weight: 900;
+}
+
+h1 span {
+color: #ffd84d;
+}
+
+.subtitle {
+margin: 12px 0 35px;
+font-size: clamp(18px, 4vw, 26px);
+color: #c9e9ff;
+}
+
+.question {
+font-size: clamp(22px, 5vw, 32px);
+font-weight: bold;
+margin-bottom: 22px;
+}
+
+.airport-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 20px;
+}
+
+.airport {
+text-decoration: none;
+color: white;
+padding: 35px 20px;
+border-radius: 30px;
+border: 2px solid rgba(255,255,255,.15);
+box-shadow: 0 15px 35px rgba(0,0,0,.25);
+transition: transform .15s;
+}
+
+.airport:active {
+transform: scale(.97);
+}
+
+.fxe {
+background: linear-gradient(145deg, #1675aa, #0a426d);
+}
+
+.fll {
+background: linear-gradient(145deg, #7554c7, #3b2b79);
+}
+
+.airport-icon {
+font-size: 70px;
+}
+
+.airport-code {
+font-size: clamp(48px, 9vw, 75px);
+font-weight: 900;
+color: #ffd84d;
+margin: 5px 0;
+}
+
+.airport-name {
+font-size: 20px;
+font-weight: bold;
+}
+
+.airport-description {
+margin-top: 12px;
+font-size: 17px;
+color: #e2f3ff;
+}
+
+.go {
+display: inline-block;
+margin-top: 20px;
+background: #ffd84d;
+color: #10233c;
+padding: 10px 20px;
+border-radius: 50px;
+font-weight: bold;
+}
+
+.footer {
+margin-top: 30px;
+color: #9cc7e3;
+font-size: 15px;
+}
+
+@media (max-width: 650px) {
+.airport-grid {
+grid-template-columns: 1fr;
+}
+
+.airport {
+padding: 25px 15px;
+}
+
+.airport-icon {
+font-size: 55px;
+}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="plane">✈️</div>
+
+<h1>
+<span>ANDRES'</span><br>
+FLIGHT WALL
+</h1>
+
+<div class="subtitle">
+Live airplanes flying into South Florida
+</div>
+
+<div class="question">
+👀 Which airport should we watch?
+</div>
+
+<div class="airport-grid">
+
+<a class="airport fxe" href="andres-fxe-arrivals.html">
+
+<div class="airport-icon">🛩️</div>
+
+<div class="airport-code">
+FXE
+</div>
+
+<div class="airport-name">
+Fort Lauderdale Executive
+</div>
+
+<div class="airport-description">
+Private jets • Small planes • Cool aircraft
+</div>
+
+<div class="go">
+WATCH FXE →
+</div>
+
+</a>
+
+
+<a class="airport fll" href="andres-fll-arrivals.html">
+
+<div class="airport-icon">🛬</div>
+
+<div class="airport-code">
+FLL
+</div>
+
+<div class="airport-name">
+Fort Lauderdale-Hollywood
+</div>
+
+<div class="airport-description">
+Airliners • Big jets • Flights from around the world
+</div>
+
+<div class="go">
+WATCH FLL →
+</div>
+
+</a>
+
+</div>
+
+<div class="footer">
+🔊 Listen for the rumble • 👀 Look to the sky • ✈️ Have fun!
+</div>
+
+</div>
+
+</body>
+</html>
